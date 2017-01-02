@@ -23,6 +23,7 @@ export default Component.extend({
   tagName: 'ol',
   linkable: true,
   reverse: false,
+  routesForInjection: [],
   classNameBindings: ['breadCrumbClass'],
   hasBlock: bool('template').readOnly(),
   currentUrl: readOnly('applicationRoute.router.url'),
@@ -37,8 +38,9 @@ export default Component.extend({
       const routeNames = currentRouteName.split('.');
       const filteredRouteNames = this._filterIndexAndLoadingRoutes(routeNames);
       const crumbs = this._lookupBreadCrumb(routeNames, filteredRouteNames);
+      const injectedCrumbs = this._injectCrumbs(crumbs);
 
-      return get(this, 'reverse') ? crumbs.reverse() : crumbs;
+      return get(this, 'reverse') ? injectedCrumbs.reverse() : injectedCrumbs;
     }
   }).readOnly(),
 
@@ -76,6 +78,22 @@ export default Component.extend({
     return getOwner(this).lookup(`route:${routeName}`);
   },
 
+  _injectCrumbs(crumbs) {
+    const flatCrumbs = crumbs.mapBy('title');
+    const crumbsForInjection = get(this, 'routesForInjection');
+
+
+    crumbsForInjection.forEach((breadCrumb) => {
+      const indexOfParent = flatCrumbs.indexOf(breadCrumb.parent);
+      const totalLength = flatCrumbs.length;
+      const childIndex = indexOfParent + breadCrumb.offset;
+
+      crumbs.splice(childIndex, 0, breadCrumb);
+    });
+
+    return crumbs;
+  },
+
   _lookupBreadCrumb(routeNames, filteredRouteNames) {
     const defaultLinkable = get(this, 'linkable');
     const pathLength = filteredRouteNames.length;
@@ -84,7 +102,6 @@ export default Component.extend({
       const route = this._lookupRoute(path);
       const isHead = index === 0;
       const isTail = index === pathLength - 1;
-
       const crumbLinkable = (index === pathLength - 1) ? false : defaultLinkable;
 
       assert(`[ember-crumbly] \`route:${path}\` was not found`, route);
@@ -92,6 +109,16 @@ export default Component.extend({
       let breadCrumb = getWithDefault(route, 'breadCrumb', {
         title: classify(name)
       });
+
+      if (breadCrumb.injection) {
+        const routesForInjection = get(this, 'routesForInjection');
+        const injectionCrumbs = breadCrumb.injection.map((additionalCrumb) => {
+          additionalCrumb.parent = classify(name);
+          return additionalCrumb;
+        });
+
+        routesForInjection.pushObjects(injectionCrumbs);
+      }
 
       if (typeOf(breadCrumb) === 'null') {
         return;
