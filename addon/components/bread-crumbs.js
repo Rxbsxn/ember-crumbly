@@ -110,16 +110,6 @@ export default Component.extend({
         title: classify(name)
       });
 
-      if (breadCrumb.injection) {
-        const routesForInjection = get(this, 'routesForInjection');
-        const injectionCrumbs = breadCrumb.injection.map((additionalCrumb) => {
-          additionalCrumb.parent = classify(name);
-          return additionalCrumb;
-        });
-
-        routesForInjection.pushObjects(injectionCrumbs);
-      }
-
       if (typeOf(breadCrumb) === 'null') {
         return;
       } else {
@@ -129,6 +119,16 @@ export default Component.extend({
           isTail,
           linkable: breadCrumb.hasOwnProperty('linkable') ? breadCrumb.linkable : crumbLinkable
         });
+      }
+
+      if (breadCrumb.injection) {
+        const routesForInjection = get(this, 'routesForInjection');
+        const injectionCrumbs = breadCrumb.injection.map((additionalCrumb) => {
+          additionalCrumb.parent = classify(name);
+          return additionalCrumb;
+        });
+
+        routesForInjection.pushObjects(injectionCrumbs);
       }
 
       return breadCrumb;
