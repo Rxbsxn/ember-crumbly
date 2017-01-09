@@ -3,6 +3,7 @@ import layout from '../templates/components/bread-crumbs';
 import getOwner from 'ember-getowner-polyfill';
 
 const {
+  set,
   get,
   Component,
   computed,
@@ -90,6 +91,8 @@ export default Component.extend({
 
       crumbs.splice(childIndex, 0, breadCrumb);
     });
+
+    set(this, 'routesForInjection', []);
 
     return crumbs;
   },
