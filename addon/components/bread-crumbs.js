@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import layout from '../templates/components/bread-crumbs';
 import getOwner from 'ember-getowner-polyfill';
+import { modelTypeName } from '../helpers/model-type-name';
 
 const {
   set,
@@ -79,6 +80,16 @@ export default Component.extend({
     return getOwner(this).lookup(`route:${routeName}`);
   },
 
+  _createAdditionalPath(model) {
+    const modelType = modelTypeName(model).toLowerCase();
+    const path = `${modelType.pluralize()}.${modelType}`
+
+    return {
+      path,
+      id: get(model, 'id')
+    }
+  },
+
   _injectCrumbs(crumbs) {
     const flatCrumbs = crumbs.mapBy('title');
     const crumbsForInjection = get(this, 'routesForInjection');
@@ -127,7 +138,22 @@ export default Component.extend({
       if (breadCrumb.injection) {
         const routesForInjection = get(this, 'routesForInjection');
         const injectionCrumbs = breadCrumb.injection.map((additionalCrumb) => {
+          let model = additionalCrumb.model;
           additionalCrumb.parent = classify(name);
+
+          if (additionalCrumb.linkable) {
+            assert('Provide model property if you want use linkable in injection', model);
+
+            let pathObject = this._createAdditionalPath(model);
+            Ember.assign(additionalCrumb, pathObject);
+          }
+
+          if (!additionalCrumb.title) {
+            assert('Provide title or model to use default title', model);
+
+            additionalCrumb.title = get(model, 'name');
+          }
+
           return additionalCrumb;
         });
 
