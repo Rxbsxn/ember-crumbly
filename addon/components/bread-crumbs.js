@@ -80,14 +80,25 @@ export default Component.extend({
     return getOwner(this).lookup(`route:${routeName}`);
   },
 
-  _createAdditionalPath(model) {
-    const modelType = modelTypeName(model).toLowerCase();
-    const path = `${modelType.pluralize()}.${modelType}`
+  _createAdditionalPath(crumb) {
+    let path, id, pathObj = {}
 
-    return {
-      path,
-      id: get(model, 'id')
+    if (crumb.model) {
+      let model = crumb.model
+      let modelType = modelTypeName(model).toLowerCase();
+
+      if (crumb.path) {
+        pathObj.path = get(crumb, 'path')
+      } else {
+        pathObj.path = `${modelType.pluralize()}.${modelType}`
+      }
+
+      pathObj.id = get(model, 'id')
+    } else {
+      pathObj.path = get(crumb, 'path')
     }
+
+    return pathObj;
   },
 
   _injectCrumbs(crumbs) {
@@ -142,14 +153,14 @@ export default Component.extend({
           additionalCrumb.parent = classify(name);
 
           if (additionalCrumb.linkable) {
-            assert('Provide model property if you want use linkable in injection', model);
+            assert('Provide model or path property if you want use linkable in injection', model || additionalCrumb.path);
 
-            let pathObject = this._createAdditionalPath(model);
+            let pathObject = this._createAdditionalPath(additionalCrumb);
             Ember.assign(additionalCrumb, pathObject);
           }
 
           if (!additionalCrumb.title) {
-            assert('Provide title or model to use default title', model);
+            assert('Provide model to use default title', model);
 
             additionalCrumb.title = get(model, 'name');
           }
