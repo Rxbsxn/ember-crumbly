@@ -146,11 +146,15 @@ export default Component.extend({
         });
       }
 
+
       if (breadCrumb.injection) {
+        set(this, 'routesForInjection', []);
+
         const routesForInjection = get(this, 'routesForInjection');
         const injectionCrumbs = breadCrumb.injection.map((additionalCrumb) => {
           let model = additionalCrumb.model;
           additionalCrumb.parent = classify(name);
+
 
           if (additionalCrumb.linkable) {
             assert('Provide model or path property if you want use linkable in injection', model || additionalCrumb.path);
