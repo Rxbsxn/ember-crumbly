@@ -92,8 +92,13 @@ export default Component.extend({
       } else {
         pathObj.path = `${modelType.pluralize()}.${modelType}`
       }
-
-      pathObj.id = get(model, 'id')
+      
+      if (crumb.id) {
+        pathObj.id = get(model, crumb.id)
+      } else {
+        pathObj.id = get(model, 'id')
+      }
+        
     } else {
       pathObj.path = get(crumb, 'path')
     }
