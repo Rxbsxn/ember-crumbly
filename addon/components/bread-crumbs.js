@@ -92,13 +92,9 @@ export default Component.extend({
       } else {
         pathObj.path = `${modelType.pluralize()}.${modelType}`
       }
-      
-      if (crumb.id) {
-        pathObj.id = get(model, crumb.id)
-      } else {
-        pathObj.id = get(model, 'id')
-      }
-        
+
+      pathObj.id = get(model, 'slug') || get(model, 'id');
+
     } else {
       pathObj.path = get(crumb, 'path')
     }
@@ -109,7 +105,6 @@ export default Component.extend({
   _injectCrumbs(crumbs) {
     const flatCrumbs = crumbs.mapBy('title');
     const crumbsForInjection = get(this, 'routesForInjection');
-
 
     crumbsForInjection.forEach((breadCrumb) => {
       const indexOfParent = flatCrumbs.indexOf(breadCrumb.parent);
@@ -160,12 +155,12 @@ export default Component.extend({
           let model = additionalCrumb.model;
           additionalCrumb.parent = classify(name);
 
-
           if (additionalCrumb.linkable) {
             assert('Provide model or path property if you want use linkable in injection', model || additionalCrumb.path);
 
             let pathObject = this._createAdditionalPath(additionalCrumb);
-            Ember.assign(additionalCrumb, pathObject);
+            additionalCrumb = Ember.Object.create(additionalCrumb)
+            additionalCrumb.setProperties(pathObject);
           }
 
           if (!additionalCrumb.title) {
