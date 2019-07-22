@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import layout from '../templates/components/bread-crumbs';
-import getOwner from 'ember-getowner-polyfill';
+import { getOwner } from '@ember/application';
 import { modelTypeName } from '../helpers/model-type-name';
 
 const {
